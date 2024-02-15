@@ -5,7 +5,12 @@ from torch import Tensor
 from typing import Optional
 from ..common_types import _size_2_t, _ratio_2_t, _size_any_t, _ratio_any_t
 
-__all__ = ['Upsample', 'UpsamplingNearest2d', 'UpsamplingBilinear2d']
+__all__ = [
+    "Upsample",
+    "UpsamplingNearest2d",
+    "UpsamplingBilinear2d",
+    "UpsamplingBicubic2d",
+]
 
 
 class Upsample(Module):
@@ -131,7 +136,14 @@ class Upsample(Module):
                   [0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000]]]])
     """
 
-    __constants__ = ['size', 'scale_factor', 'mode', 'align_corners', 'name', 'recompute_scale_factor']
+    __constants__ = [
+        "size",
+        "scale_factor",
+        "mode",
+        "align_corners",
+        "name",
+        "recompute_scale_factor",
+    ]
     name: str
     size: Optional[_size_any_t]
     scale_factor: Optional[_ratio_any_t]
@@ -139,9 +151,14 @@ class Upsample(Module):
     align_corners: Optional[bool]
     recompute_scale_factor: Optional[bool]
 
-    def __init__(self, size: Optional[_size_any_t] = None, scale_factor: Optional[_ratio_any_t] = None,
-                 mode: str = 'nearest', align_corners: Optional[bool] = None,
-                 recompute_scale_factor: Optional[bool] = None) -> None:
+    def __init__(
+        self,
+        size: Optional[_size_any_t] = None,
+        scale_factor: Optional[_ratio_any_t] = None,
+        mode: str = "nearest",
+        align_corners: Optional[bool] = None,
+        recompute_scale_factor: Optional[bool] = None,
+    ) -> None:
         super().__init__()
         self.name = type(self).__name__
         self.size = size
@@ -154,21 +171,27 @@ class Upsample(Module):
         self.recompute_scale_factor = recompute_scale_factor
 
     def forward(self, input: Tensor) -> Tensor:
-        return F.interpolate(input, self.size, self.scale_factor, self.mode, self.align_corners,
-                             recompute_scale_factor=self.recompute_scale_factor)
+        return F.interpolate(
+            input,
+            self.size,
+            self.scale_factor,
+            self.mode,
+            self.align_corners,
+            recompute_scale_factor=self.recompute_scale_factor,
+        )
 
     def __setstate__(self, state):
-        if 'recompute_scale_factor' not in state:
-            state['recompute_scale_factor'] = True
+        if "recompute_scale_factor" not in state:
+            state["recompute_scale_factor"] = True
 
         super().__setstate__(state)
 
     def extra_repr(self) -> str:
         if self.scale_factor is not None:
-            info = 'scale_factor=' + repr(self.scale_factor)
+            info = "scale_factor=" + repr(self.scale_factor)
         else:
-            info = 'size=' + repr(self.size)
-        info += ', mode=' + repr(self.mode)
+            info = "size=" + repr(self.size)
+        info += ", mode=" + repr(self.mode)
         return info
 
 
@@ -213,8 +236,12 @@ class UpsamplingNearest2d(Upsample):
                   [3., 3., 4., 4.]]]])
     """
 
-    def __init__(self, size: Optional[_size_2_t] = None, scale_factor: Optional[_ratio_2_t] = None) -> None:
-        super().__init__(size, scale_factor, mode='nearest')
+    def __init__(
+        self,
+        size: Optional[_size_2_t] = None,
+        scale_factor: Optional[_ratio_2_t] = None,
+    ) -> None:
+        super().__init__(size, scale_factor, mode="nearest")
 
 
 class UpsamplingBilinear2d(Upsample):
@@ -260,5 +287,60 @@ class UpsamplingBilinear2d(Upsample):
                   [3.0000, 3.3333, 3.6667, 4.0000]]]])
     """
 
-    def __init__(self, size: Optional[_size_2_t] = None, scale_factor: Optional[_ratio_2_t] = None) -> None:
-        super().__init__(size, scale_factor, mode='bilinear', align_corners=True)
+    def __init__(
+        self,
+        size: Optional[_size_2_t] = None,
+        scale_factor: Optional[_ratio_2_t] = None,
+    ) -> None:
+        super().__init__(size, scale_factor, mode="bilinear", align_corners=True)
+
+
+class UpsamplingBicubic2d(Upsample):
+    r"""Applies a 2D bicubic upsampling to an input signal composed of several input channels.
+
+    To specify the scale, it takes either the :attr:`size` or the :attr:`scale_factor`
+    as it's constructor argument.
+
+    When :attr:`size` is given, it is the output size of the image `(h, w)`.
+
+    Args:
+        size (int or Tuple[int, int], optional): output spatial sizes
+        scale_factor (float or Tuple[float, float], optional): multiplier for
+            spatial size.
+
+    .. warning::
+        This class is deprecated in favor of :func:`~nn.functional.interpolate`. It is
+        equivalent to ``nn.functional.interpolate(..., mode='bicubic', align_corners=True)``.
+
+    Shape:
+        - Input: :math:`(N, C, H_{in}, W_{in})`
+        - Output: :math:`(N, C, H_{out}, W_{out})` where
+
+    .. math::
+        H_{out} = \left\lfloor H_{in} \times \text{scale\_factor} \right\rfloor
+
+    .. math::
+        W_{out} = \left\lfloor W_{in} \times \text{scale\_factor} \right\rfloor
+
+    Examples::
+
+        >>> input = torch.arange(1, 5, dtype=torch.float32).view(1, 1, 2, 2)
+        >>> input
+        tensor([[[[1., 2.],
+                  [3., 4.]]]])
+
+        >>> # xdoctest: +IGNORE_WANT("do other tests modify the global state?")
+        >>> m = nn.UpsamplingBicubic2d(scale_factor=2)
+        >>> m(input)
+        tensor([[[[1.0000, 1.3333, 1.6667, 2.0000],
+                  [1.6667, 2.0000, 2.3333, 2.6667],
+                  [2.3333, 2.6667, 3.0000, 3.3333],
+                  [3.0000, 3.3333, 3.6667, 4.0000]]]])
+    """
+
+    def __init__(
+        self,
+        size: Optional[_size_2_t] = None,
+        scale_factor: Optional[_ratio_2_t] = None,
+    ) -> None:
+        super().__init__(size, scale_factor, mode="bicubic", align_corners=True)

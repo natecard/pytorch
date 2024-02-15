@@ -6051,14 +6051,14 @@ class TestMPS(TestCaseMPS):
 
             for i in values:
                 for j in values:
-                    upsample_bicubic2d_aa = nn.UpsamplingNearest2d(scale_factor=(i, j))
+                    upsample_bicubic2d_aa = nn.UpsamplingBicubic2d(scale_factor=(i, j))
 
                     outputCPU = upsample_bicubic2d_aa(inputCPU)
                     outputMPS = upsample_bicubic2d_aa(inputMPS)
 
                     self.assertEqual(outputCPU, outputMPS)
 
-                    upsample_bicubic2d_aa = nn.UpsamplingNearest2d((i * H, j * W))
+                    upsample_bicubic2d_aa = nn.UpsamplingBicubic2d((i * H, j * W))
 
                     outputCPU = upsample_bicubic2d_aa(inputCPU)
                     outputMPS = upsample_bicubic2d_aa(inputMPS)

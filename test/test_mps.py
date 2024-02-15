@@ -6040,6 +6040,39 @@ class TestMPS(TestCaseMPS):
             helper(1, 1, 4, 4, memory_format=memory_format)
             helper(7, 5, 3, 2, memory_format=memory_format)
 
+    def test_upsample_bicubic2d_aa(self):
+        def helper(N, C, H, W):
+            inputCPU = torch.arange(N * C * H * W, device='cpu', dtype=torch.float,
+                                    requires_grad=True).reshape(N, C, H, W)
+            inputCPU.retain_grad()
+            inputMPS = inputCPU.detach().clone().to('mps').requires_grad_()
+
+            values = [1, 2, 5, 10, 40]
+
+            for i in values:
+                for j in values:
+                    upsample_bicubic2d_aa = nn.UpsamplingNearest2d(scale_factor=(i, j))
+
+                    outputCPU = upsample_bicubic2d_aa(inputCPU)
+                    outputMPS = upsample_bicubic2d_aa(inputMPS)
+
+                    self.assertEqual(outputCPU, outputMPS)
+
+                    upsample_bicubic2d_aa = nn.UpsamplingNearest2d((i * H, j * W))
+
+                    outputCPU = upsample_bicubic2d_aa(inputCPU)
+                    outputMPS = upsample_bicubic2d_aa(inputMPS)
+
+                    self.assertEqual(outputCPU, outputMPS)
+
+                    outputCPU.backward(gradient=torch.full_like(outputCPU, 0.3))
+                    outputMPS.backward(gradient=torch.full_like(outputMPS, 0.3))
+
+                    self.assertEqual(inputCPU.grad, inputMPS.grad)
+
+        helper(1, 1, 4, 4)
+        helper(7, 5, 3, 2)
+
     def test_upsample_bilinear2d(self):
         def helper(N, C, H, W):
             inputCPU = torch.arange(N * C * H * W, device='cpu', dtype=torch.float,
@@ -6108,7 +6141,7 @@ class TestMPS(TestCaseMPS):
             helper([2, 3, 4], None, [0.6], mode)  # downsample with scale factor
             helper([2, 3, 4], None, [1.7], mode)  # upsample with scale factor
         # 2D interpolation
-        for mode in ['nearest', 'nearest-exact', 'bilinear']:
+        for mode in ['nearest', 'nearest-exact', 'bilinear', 'bicubic']:
             helper([2, 3, 4, 5], [3, 4], None, mode)  # downsample_nearest with size
             helper([2, 3, 4, 5], [6, 7], None, mode)  # upsample_nearest with size
             helper([2, 3, 4, 5], None, [0.6, 0.7], mode)  # downsample_nearest with scale factor

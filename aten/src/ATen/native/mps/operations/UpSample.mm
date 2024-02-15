@@ -390,4 +390,34 @@ TORCH_IMPL_FUNC(upsample_bilinear2d_backward_out_mps)
   }
 }
 
+TORCH_IMPL_FUNC(_upsample_bicubic2d_aa_out_mps) 
+(const Tensor& input,
+ IntArrayRef output_size,
+ bool align_corners,
+ c10::optional<double> scales_h,
+ c10::optional<double> scales_w,
+ const Tensor& output) {
+  if (check_mps_compatibility("bicubic", scales_w)) {
+    mps::upsample_out_template(input, output_size, c10::nullopt, scales_h, scales_w, output, align_corners, "bilinear");
+  } else {
+    output.copy_(at::upsample_bicubic2a_aa(input.to("cpu"), output_size, align_corners, scales_h, scales_w));
+}
+
+TORCH_IMPL_FUNC(_upsample_bicubic2d_aa_backward_out_mps) (
+    const Tensor& grad_output,
+    IntArrayRef output_size,
+    IntArrayRef input_size,
+    bool align_corners,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w,
+    const Tensor& grad_input) {
+  if (check_mps_compatibility("bicubic", scales_w)) {
+    mps::upsample_out_template(
+        grad_output, output_size, input_size, scales_h, scales_w, grad_input, align_corners, "bicubic");
+  } else {
+    grad_input.copy_(at::upsample_bicubic2d_aa_backward(
+        grad_output.to("cpu"), output_size, input_size, align_corners, scales_h, scales_w));
+  }
+}
+
 } // namespace at::native

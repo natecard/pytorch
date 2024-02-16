@@ -8,8 +8,6 @@
 #include <ATen/Functions.h>
 #include <ATen/NativeFunctions.h>
 #else
-#include <ATen/ops/_upsample_bicubic2d_aa.h>
-#include <ATen/ops/_upsample_bicubic2d_aa_out.h>
 #include <ATen/ops/_upsample_nearest_exact1d.h>
 #include <ATen/ops/_upsample_nearest_exact1d_backward.h>
 #include <ATen/ops/_upsample_nearest_exact1d_backward_native.h>
@@ -18,6 +16,8 @@
 #include <ATen/ops/_upsample_nearest_exact2d_backward.h>
 #include <ATen/ops/_upsample_nearest_exact2d_backward_native.h>
 #include <ATen/ops/_upsample_nearest_exact2d_native.h>
+#include <ATen/ops/upsample_bicubic2d.h>
+#include <ATen/ops/upsample_bicubic2d_backward.h>
 #include <ATen/ops/upsample_bilinear2d.h>
 #include <ATen/ops/upsample_bilinear2d_backward.h>
 #include <ATen/ops/upsample_bilinear2d_backward_native.h>
@@ -30,8 +30,8 @@
 #include <ATen/ops/upsample_nearest2d_backward.h>
 #include <ATen/ops/upsample_nearest2d_backward_native.h>
 #include <ATen/ops/upsample_nearest2d_native.h>
-#include <ATen/ops/_upsample_bicubic2d_aa.native>
-#include <ATen/ops/_upsample_bicubic2d_aa_out.native>
+#include <ATen/ops/upsample_bicubic2d.native>
+#include <ATen/ops/upsample_bicubic2d_backward.native>
 #endif
 namespace at::native {
 namespace mps {
@@ -393,7 +393,7 @@ TORCH_IMPL_FUNC(upsample_bilinear2d_backward_out_mps)
         grad_output.to("cpu"), output_size, input_size, align_corners, scales_h, scales_w));
   }
 }
-TORCH_IMPL_FUNC(_upsample_bicubic2d_aa_out_mps)
+TORCH_IMPL_FUNC(_upsample_bicubic2d_out_mps)
 (const Tensor& input,
  IntArrayRef output_size,
  bool align_corners,
@@ -403,9 +403,9 @@ TORCH_IMPL_FUNC(_upsample_bicubic2d_aa_out_mps)
   if (check_mps_compatibility("bicubic", scales_w)) {
     mps::upsample_out_template(input, output_size, c10::nullopt, scales_h, scales_w, output, align_corners, "bicubic");
   } else {
-    output.copy_(at::upsample_bicubic2a_aa(input.to("cpu"), output_size, align_corners, scales_h, scales_w));
+    output.copy_(at::upsample_bicubic2d(input.to("cpu"), output_size, align_corners, scales_h, scales_w));
   }
-  TORCH_IMPL_FUNC(_upsample_bicubic2d_aa_backward_out_mps)
+  TORCH_IMPL_FUNC(_upsample_bicubic2d_backward_out_mps)
   (const Tensor& grad_output,
    IntArrayRef output_size,
    IntArrayRef input_size,
@@ -417,7 +417,7 @@ TORCH_IMPL_FUNC(_upsample_bicubic2d_aa_out_mps)
       mps::upsample_out_template(
           grad_output, output_size, input_size, scales_h, scales_w, grad_input, align_corners, "bicubic");
     } else {
-      grad_input.copy_(at::upsample_bicubic2d_aa_backward(
+      grad_input.copy_(at::upsample_bicubic2d_backward(
           grad_output.to("cpu"), output_size, input_size, align_corners, scales_h, scales_w));
     }
   }

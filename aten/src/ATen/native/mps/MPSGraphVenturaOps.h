@@ -142,6 +142,19 @@ typedef NS_ENUM(NSUInteger, MPSGraphResizeNearestRoundingMode)
                                                 layout:(MPSGraphTensorNamedDataLayout) layout
                                                   name:(NSString * _Nullable) name;
 
+- (MPSGraphTensor * _Nonnull) resizeBicubicWithTensor:(MPSGraphTensor * _Nonnull) imagesTensor
+                                           sizeTensor:(MPSGraphTensor * _Nonnull) size
+                                         centerResult:(BOOL) centerResult
+                                         alignCorners:(BOOL) alignCorners
+                                               layout:(MPSGraphTensorNamedDataLayout) layout
+                                                 name:(NSString * _Nullable) name;
+
+- (MPSGraphTensor * _Nonnull) resizeBicubicWithTensor:(MPSGraphTensor * _Nonnull) imagesTensor
+                                           sizeTensor:(MPSGraphTensor * _Nonnull) size
+                                         centerResult:(BOOL) centerResult
+                                               layout:(MPSGraphTensorNamedDataLayout) layout
+                                                 name:(NSString * _Nullable) name;
+
 - (MPSGraphTensor * _Nonnull) resizeNearestWithGradientTensor:(MPSGraphTensor * _Nonnull) gradient
                                                         input:(MPSGraphTensor * _Nonnull) input
                                           nearestRoundingMode:(MPSGraphResizeNearestRoundingMode) nearestRoundingMode
@@ -169,6 +182,19 @@ typedef NS_ENUM(NSUInteger, MPSGraphResizeNearestRoundingMode)
                                              scaleOffsetTensor:(MPSGraphTensor * _Nonnull) scaleOffset
                                                         layout:(MPSGraphTensorNamedDataLayout) layout
                                                           name:(NSString * _Nullable) name;
+
+- (MPSGraphTensor * _Nonnull) resizeBicubicWithGradientTensor:(MPSGraphTensor * _Nonnull) gradient
+                                                        input:(MPSGraphTensor * _Nonnull) input
+                                                 centerResult:(BOOL) centerResult
+                                                 alignCorners:(BOOL) alignCorners
+                                                       layout:(MPSGraphTensorNamedDataLayout) layout
+                                                         name:(NSString * _Nullable) name;
+
+- (MPSGraphTensor * _Nonnull) resizeBicubicWithGradientTensor:(MPSGraphTensor * _Nonnull) gradient
+                                                        input:(MPSGraphTensor * _Nonnull) input
+                                                 centerResult:(BOOL) centerResult
+                                                       layout:(MPSGraphTensorNamedDataLayout) layout
+                                                         name:(NSString * _Nullable) name;
 
 - (MPSGraphTensor * _Nonnull) sampleGridWithSourceTensor:(MPSGraphTensor * _Nonnull) source
                                         coordinateTensor:(MPSGraphTensor * _Nonnull) coordinates

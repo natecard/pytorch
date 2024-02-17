@@ -393,7 +393,7 @@ TORCH_IMPL_FUNC(upsample_bilinear2d_backward_out_mps)
         grad_output.to("cpu"), output_size, input_size, align_corners, scales_h, scales_w));
   }
 }
-TORCH_IMPL_FUNC(_upsample_bicubic2d_out_mps)
+TORCH_IMPL_FUNC(upsample_bicubic2d_out_mps)
 (const Tensor& input,
  IntArrayRef output_size,
  bool align_corners,
@@ -405,7 +405,7 @@ TORCH_IMPL_FUNC(_upsample_bicubic2d_out_mps)
   } else {
     output.copy_(at::upsample_bicubic2d(input.to("cpu"), output_size, align_corners, scales_h, scales_w));
   }
-  TORCH_IMPL_FUNC(_upsample_bicubic2d_backward_out_mps)
+  TORCH_IMPL_FUNC(upsample_bicubic2d_backward_out_mps)
   (const Tensor& grad_output,
    IntArrayRef output_size,
    IntArrayRef input_size,

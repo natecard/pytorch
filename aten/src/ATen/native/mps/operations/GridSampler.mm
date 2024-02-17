@@ -54,7 +54,7 @@ static void grid_sampler_2d_mps_impl(Tensor& output,
       samplingMode = MPSGraphResizeNearest;
       break;
     case GridSamplerInterpolation::Bicubic:
-      TORCH_CHECK(false, "MPS: Unsupported Bicubic interpolation");
+      samplingMode = MPSGraphResizeBicubic;
       break;
     default:
       TORCH_CHECK(false, "MPS: Unrecognised interpolation mode: ", interpolation_mode);
